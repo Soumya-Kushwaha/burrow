@@ -1,7 +1,17 @@
 use std::os::unix::io::{AsRawFd, IntoRawFd, RawFd};
 
+use crate::TunInterface;
+
 pub struct TunQueue {
     socket: socket2::Socket,
+}
+
+impl From<TunInterface> for TunQueue {
+    fn from(interface: TunInterface) -> TunQueue {
+        TunQueue {
+            socket: interface.socket,
+        }
+    }
 }
 
 impl AsRawFd for TunQueue {

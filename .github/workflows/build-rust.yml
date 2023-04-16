@@ -35,6 +35,8 @@ jobs:
           - aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     env:
+      RUST_BACKTRACE: short
+      CARGO_INCREMENTAL: 0
       DEVELOPER_DIR: /Applications/Xcode_14.2.app/Contents/Developer
       CARGO_INCREMENTAL: 0
       CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc

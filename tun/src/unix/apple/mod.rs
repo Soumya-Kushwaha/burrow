@@ -1,26 +1,30 @@
+use libc::c_char;
 use socket2::SockAddr;
-use std::io::Result;
+use std::io::Error;
 use std::os::unix::io::{AsRawFd, IntoRawFd, RawFd};
 
+use fehler::throws;
+
 mod kern_control;
-mod queue;
 
-pub use queue::TunQueue;
+pub use super::queue::TunQueue;
 
+use super::copy_if_name;
 use crate::syscall;
-use crate::unix::copy_if_name;
 use kern_control::SysControlSocket;
 
 pub struct TunInterface {
-    socket: socket2::Socket,
+    pub(crate) socket: socket2::Socket,
 }
 
 impl TunInterface {
-    pub fn new() -> Result<TunInterface> {
-        TunInterface::connect(None)
+    #[throws]
+    pub fn new() -> TunInterface {
+        TunInterface::connect(None)?
     }
 
-    fn connect(addr: Option<SockAddr>) -> Result<TunInterface> {
+    #[throws]
+    fn connect(addr: Option<SockAddr>) -> TunInterface {
         use socket2::{Domain, Protocol, Socket, Type};
 
         let socket = Socket::new(
@@ -34,11 +38,12 @@ impl TunInterface {
         };
         socket.connect(&addr)?;
 
-        Ok(TunInterface { socket })
+        TunInterface { socket }
     }
 
-    pub fn name(&self) -> Result<String> {
-        let mut buf = [0i8; libc::IFNAMSIZ];
+    #[throws]
+    pub fn name(&self) -> String {
+        let mut buf = [0 as c_char; libc::IFNAMSIZ];
         let mut len = buf.len() as libc::socklen_t;
         syscall!(getsockopt(
             self.as_raw_fd(),
@@ -47,12 +52,18 @@ impl TunInterface {
             buf.as_mut_ptr() as *mut libc::c_void,
             &mut len,
         ))?;
-        let name = copy_if_name(buf);
-        Ok(name)
+        copy_if_name(buf)
     }
 
-    pub fn queue(&self) -> Result<TunQueue> {
-        todo!()
+    #[throws]
+    pub fn try_clone(&self) -> TunInterface {
+        let addr = self.socket.peer_addr()?;
+        TunInterface::connect(Some(addr))?
+    }
+
+    #[throws]
+    pub fn queue(&self) -> TunQueue {
+        self.try_clone()?.into()
     }
 }
 
