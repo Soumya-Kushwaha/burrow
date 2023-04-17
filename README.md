@@ -7,3 +7,7 @@ Burrow is a tool for burrowing through firewalls, built by teenagers at [Hack Cl
 At its core, `burrow` is a command line utility written in Rust that can open virtual interfaces and direct traffic through them.
 
 You can use it directly from the command line, or you can use it wrapped inside of an app. Currently, there are apps for iOS and macOS that you can use to start the tunnel.
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
